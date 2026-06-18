@@ -1,111 +1,176 @@
 # GCP Vertex AI MLOps Project
-
-## Overview
-
-This project demonstrates an end-to-end Machine Learning Operations (MLOps) workflow using Google Cloud Vertex AI.
-
-A Random Forest machine learning model is trained using the Iris dataset, registered in Vertex AI Model Registry, deployed to a Vertex AI Endpoint, and tested through real-time online predictions.
-
-The objective of this project is to understand the complete lifecycle of a machine learning model in a cloud-native environment using managed Google Cloud services.
+## End-to-End Model Training, Registration, Deployment, and Prediction using Vertex AI
 
 ---
 
-## Architecture
+# Project Overview
 
-![GCP Vertex AI MLOps Architecture](03-architecture-diagram.png)
+This project demonstrates a complete MLOps workflow using Google Cloud Vertex AI.
 
-Figure: End-to-End Vertex AI MLOps Workflow
+The project trains a Machine Learning model using the Iris dataset, registers the trained model in Vertex AI Model Registry, deploys it to a Vertex AI Endpoint, performs online predictions, and verifies the complete deployment lifecycle.
 
-## Project Architecture
+The implementation uses:
+
+- Google Cloud Platform (GCP)
+- Vertex AI
+- Cloud Storage
+- Cloud Shell
+- Scikit-Learn
+- Python
+
+---
+
+# Project Objective
+
+The objective of this project is to understand and implement a complete MLOps lifecycle on Google Cloud Vertex AI.
+
+The workflow includes:
+
+- Dataset Preparation
+- Model Training
+- Model Artifact Storage
+- Model Registration
+- Endpoint Deployment
+- Online Prediction
+- Resource Cleanup
+
+This project simulates a real-world machine learning deployment pipeline using managed cloud services.
+
+---
+
+# Architecture Diagram
+
+![Architecture](03-architecture-diagram.png)
+
+---
+
+# Solution Architecture
+
+The workflow follows the sequence below:
+
+1. Iris Dataset is loaded.
+2. Random Forest model is trained using Scikit-Learn.
+3. Vertex AI Custom Training Job executes training.
+4. Model artifact (model.joblib) is generated.
+5. Artifact is stored in Cloud Storage.
+6. Model is registered in Vertex AI Model Registry.
+7. Model is deployed to a Vertex AI Endpoint.
+8. Endpoint serves real-time predictions.
+9. Prediction responses are returned to the client.
+
+---
+
+# Technologies Used
+
+| Service | Purpose |
+|----------|----------|
+| Vertex AI | Model Training and Deployment |
+| Cloud Storage | Model Artifact Storage |
+| Cloud Shell | Development Environment |
+| Scikit-Learn | Machine Learning Framework |
+| Python | Programming Language |
+| GitHub | Source Code Management |
+
+---
+
+# Prerequisites
+
+Before starting this project ensure that:
+
+- Google Cloud Account is available
+- Billing is enabled
+- Vertex AI API access is available
+- Cloud Storage API access is available
+- Artifact Registry API access is available
+- Cloud Shell access is available
+
+Region used:
 
 ```text
-Iris Dataset
-      |
-      v
-train.py
-      |
-      v
-Vertex AI Custom Training Job
-      |
-      v
-Cloud Storage Bucket
-(model.joblib)
-      |
-      v
-Vertex AI Model Registry
-      |
-      v
-Vertex AI Endpoint
-      |
-      v
-Online Prediction API
-      |
-      v
-Prediction Response
+us-central1
 ```
 
 ---
 
-## Technologies Used
-
-| Technology | Purpose |
-|------------|----------|
-| Google Cloud Platform (GCP) | Cloud Infrastructure |
-| Vertex AI | Model Training and Deployment |
-| Cloud Storage | Model Artifact Storage |
-| Python 3.10 | Development Language |
-| Scikit-Learn | Machine Learning Framework |
-| Random Forest Classifier | Classification Algorithm |
-| Joblib | Model Serialization |
-| Git | Version Control |
-| GitHub | Source Code Repository |
-
----
-
-## Dataset
-
-The project uses the Iris dataset provided by Scikit-Learn.
-
-### Dataset Characteristics
-
-- Total Records: 150
-- Features: 4
-- Classes: 3
-
-### Features
-
-1. Sepal Length
-2. Sepal Width
-3. Petal Length
-4. Petal Width
-
-### Target Classes
-
-- Setosa (0)
-- Versicolor (1)
-- Virginica (2)
-
----
-
-## Project Structure
+# Project Structure
 
 ```text
 gcp-vertex-ml-lab/
-│
+
 ├── train.py
 ├── run_vertex_lab.py
 ├── predict.py
 ├── README.md
-└── architecture.png
+└── 03-architecture-diagram.png
 ```
 
 ---
 
-## Workflow
+# File Description
 
-### Step 1: Configure GCP Environment
+## train.py
 
-The project begins by configuring the Google Cloud environment.
+Responsible for:
+
+- Loading Iris Dataset
+- Splitting dataset
+- Training Random Forest model
+- Evaluating model accuracy
+- Saving model.joblib
+- Uploading model artifact to Cloud Storage
+
+---
+
+## run_vertex_lab.py
+
+Responsible for:
+
+- Creating Vertex AI Custom Training Job
+- Running model training
+- Registering model in Vertex AI Model Registry
+- Deploying model to Vertex AI Endpoint
+- Running prediction test
+
+---
+
+## predict.py
+
+Responsible for:
+
+- Connecting to deployed endpoint
+- Sending prediction request
+- Displaying prediction response
+
+---
+
+# Step 1: Select Project and Open Cloud Shell
+
+## Console Navigation
+
+1. Open Google Cloud Console
+2. Select your project
+3. Click Cloud Shell icon
+4. Wait for Cloud Shell terminal to start
+
+Verify Project:
+
+```bash
+PROJECT_ID=$(gcloud config get-value project)
+
+echo $PROJECT_ID
+```
+
+Expected Output:
+
+```text
+your-project-id
+```
+
+---
+
+# Step 2: Configure Project Variables
+
+Run:
 
 ```bash
 PROJECT_ID=$(gcloud config get-value project)
@@ -119,11 +184,31 @@ export REGION
 export BUCKET
 ```
 
+Verify:
+
+```bash
+echo $PROJECT_ID
+
+echo $REGION
+
+echo $BUCKET
+```
+
+Expected Output:
+
+```text
+PROJECT_ID=your-project-id
+
+REGION=us-central1
+
+BUCKET=your-project-id-vertex-ml-lab-xxxxx
+```
+
 ---
 
-### Step 2: Enable Required APIs
+# Step 3: Enable Required APIs
 
-The following services are enabled:
+Run:
 
 ```bash
 gcloud services enable \
@@ -132,7 +217,7 @@ storage.googleapis.com \
 artifactregistry.googleapis.com
 ```
 
-Services enabled:
+Required APIs:
 
 - Vertex AI API
 - Cloud Storage API
@@ -140,290 +225,481 @@ Services enabled:
 
 ---
 
-### Step 3: Create Cloud Storage Bucket
+# Step 4: Create Cloud Storage Bucket
 
-A Cloud Storage bucket is created to store model artifacts.
+Run:
 
 ```bash
 gsutil mb -l $REGION gs://$BUCKET
 ```
 
-Example:
-
-```text
-gs://project-xxxxx-vertex-ml-lab-17840
-```
-
----
-
-### Step 4: Train Machine Learning Model
-
-The training logic is implemented in:
-
-```text
-train.py
-```
-
-The script performs:
-
-- Load Iris Dataset
-- Split Dataset
-- Train Random Forest Model
-- Evaluate Model Accuracy
-- Save Model as model.joblib
-- Upload Model to Cloud Storage
-
-Model Configuration:
-
-```python
-RandomForestClassifier(
-    n_estimators=100,
-    random_state=42
-)
-```
-
----
-
-### Step 5: Submit Vertex AI Custom Training Job
-
-The orchestration script:
-
-```text
-run_vertex_lab.py
-```
-
-creates a Vertex AI Custom Training Job.
-
-Training Container:
-
-```text
-us-docker.pkg.dev/vertex-ai/training/sklearn-cpu.1-6:latest
-```
-
-Machine Type:
-
-```text
-n1-standard-4
-```
-
-Output Location:
-
-```text
-gs://<bucket-name>/vertex-output
-```
-
----
-
-### Step 6: Store Model Artifact
-
-After successful training, the model is saved as:
-
-```text
-model.joblib
-```
-
-and stored in:
-
-```text
-Google Cloud Storage
-```
-
-Example:
-
-```text
-gs://<bucket>/vertex-output/model/model.joblib
-```
-
----
-
-### Step 7: Register Model in Vertex AI
-
-The trained model is automatically registered in Vertex AI Model Registry.
-
-Model Name:
-
-```text
-iris-random-forest-model
-```
-
-Benefits:
-
-- Model Versioning
-- Model Governance
-- Deployment Management
-- Lifecycle Tracking
-
----
-
-### Step 8: Deploy Model to Endpoint
-
-The model is deployed to a Vertex AI Endpoint for online inference.
-
-Endpoint Name:
-
-```text
-iris-random-forest-model_endpoint
-```
-
-Deployment Configuration:
-
-```text
-Machine Type : n1-standard-2
-Min Replicas : 1
-Max Replicas : 1
-Traffic Split : 100%
-```
-
----
-
-### Step 9: Real-Time Prediction
-
-Prediction requests are sent to the deployed endpoint.
-
-Example Input:
-
-```python
-[
- [5.1, 3.5, 1.4, 0.2],
- [6.7, 3.1, 4.7, 1.5],
- [7.2, 3.6, 6.1, 2.5]
-]
-```
-
-Example Output:
-
-```text
-[0, 1, 2]
-```
-
-Class Mapping:
-
-| Prediction | Flower |
-|------------|---------|
-| 0 | Setosa |
-| 1 | Versicolor |
-| 2 | Virginica |
-
----
-
-## Verification Commands
-
-### List Training Jobs
+Verify:
 
 ```bash
-gcloud ai custom-jobs list --region=us-central1
+gsutil ls
 ```
 
-### List Registered Models
+Expected:
 
-```bash
-gcloud ai models list --region=us-central1
-```
-
-### List Endpoints
-
-```bash
-gcloud ai endpoints list --region=us-central1
-```
-
-### View Storage Bucket Contents
-
-```bash
-gsutil ls -r gs://<bucket-name>
+```text
+gs://your-project-id-vertex-ml-lab-xxxxx/
 ```
 
 ---
 
-## Results
+# Step 5: Create Project Folder
 
-### Training Job
+Run:
 
-Status:
+```bash
+mkdir -p gcp-vertex-ml-lab
+
+cd gcp-vertex-ml-lab
+```
+
+Verify:
+
+```bash
+pwd
+```
+
+Expected:
+
+```text
+/home/username/gcp-vertex-ml-lab
+```
+
+---
+
+# Step 6: Create Training Script
+
+Create file:
+
+```bash
+touch train.py
+```
+
+Purpose:
+
+The script:
+
+- Loads Iris dataset
+- Splits data
+- Trains Random Forest model
+- Evaluates accuracy
+- Saves model artifact
+- Uploads model.joblib to Cloud Storage
+
+Verify:
+
+```bash
+cat train.py
+```
+
+---
+
+# Step 7: Create Vertex AI Runner Script
+
+Create file:
+
+```bash
+touch run_vertex_lab.py
+```
+
+Purpose:
+
+The script:
+
+- Creates Vertex AI Custom Training Job
+- Registers model
+- Deploys endpoint
+- Tests online prediction
+
+Verify:
+
+```bash
+cat run_vertex_lab.py
+```
+
+---
+
+# Step 8: Install Vertex AI SDK
+
+Run:
+
+```bash
+python3 -m pip install --user --upgrade google-cloud-aiplatform
+```
+
+Verify:
+
+```bash
+python3 -c "from google.cloud import aiplatform; print('Vertex AI SDK Ready')"
+```
+
+Expected:
+
+```text
+Vertex AI SDK Ready
+```
+
+---
+
+# Step 9: Execute Complete Vertex AI Workflow
+
+Run:
+
+```bash
+python3 run_vertex_lab.py
+```
+
+This performs:
+
+- Custom Training Job Creation
+- Model Training
+- Artifact Generation
+- Artifact Upload
+- Model Registration
+- Endpoint Creation
+- Endpoint Deployment
+- Prediction Test
+
+Expected Output:
+
+```text
+Training completed
+
+Deployment completed
+
+Prediction response
+
+Prediction(predictions=[...])
+```
+
+Save:
+
+```text
+MODEL_ID
+
+ENDPOINT_ID
+
+BUCKET
+```
+
+---
+
+# Step 10: Verify Training Job
+
+Run:
+
+```bash
+gcloud ai custom-jobs list --region=$REGION
+```
+
+Expected:
 
 ```text
 JOB_STATE_SUCCEEDED
 ```
 
-### Model Registry
+Verification:
 
-Model successfully registered in Vertex AI.
-
-### Endpoint Deployment
-
-Status:
-
-```text
-READY
-```
-
-### Prediction
-
-Successful online inference performed through Vertex AI Endpoint.
+- Training Job Exists
+- Status = Successful
 
 ---
 
-## Screenshots
+# Step 11: Verify Model Registry
 
-The project documentation contains screenshots for:
+Run:
 
-- GCP Project Configuration
-- API Enablement
-- Cloud Storage Bucket Creation
-- Training Script
-- Vertex AI Training Job
-- Model Registry
+```bash
+gcloud ai models list --region=$REGION
+```
+
+Expected:
+
+```text
+iris-random-forest-model
+```
+
+Verification:
+
+- Model Registered Successfully
+- Model Version Created
+
+---
+
+# Step 12: Verify Endpoint Deployment
+
+Run:
+
+```bash
+gcloud ai endpoints list --region=$REGION
+```
+
+Expected:
+
+```text
+iris-random-forest-model_endpoint
+```
+
+Verification:
+
+- Endpoint Exists
+- Deployment Successful
+
+---
+
+# Step 13: Verify Storage Artifacts
+
+Run:
+
+```bash
+gsutil ls -r gs://$BUCKET
+```
+
+Expected:
+
+```text
+vertex-output/model/model.joblib
+```
+
+Verification:
+
+- Model Artifact Available
+- Upload Successful
+
+---
+
+# Step 14: Prediction Testing
+
+Run:
+
+```bash
+python3 predict.py
+```
+
+Provide:
+
+```text
+ENDPOINT_ID
+```
+
+Example Input:
+
+```text
+4902054394939310080
+```
+
+Expected Output:
+
+```text
+Prediction(predictions=[...])
+```
+
+---
+
+# Project Results
+
+Successfully Completed:
+
+- Vertex AI Custom Training Job
+- Model Training
+- Artifact Storage
+- Model Registry Registration
 - Endpoint Deployment
 - Online Prediction
-- GitHub Repository
-- Project Backup
 
----
+Generated Resources:
 
-## Learning Outcomes
+- model.joblib
+- Vertex AI Model
+- Vertex AI Endpoint
+- Cloud Storage Artifacts
 
-Through this project, the following MLOps concepts were implemented:
-
-- Cloud-Based Model Training
-- Managed Infrastructure
-- Model Artifact Management
-- Model Versioning
-- Model Registry
-- Endpoint Deployment
-- Real-Time Inference
-- Cloud Storage Integration
-- Git Version Control
-- End-to-End MLOps Lifecycle
-
----
-
-## Future Enhancements
-
-Possible improvements include:
-
-- CI/CD using GitHub Actions
-- Automated Model Retraining
-- Model Monitoring
-- Feature Store Integration
-- ML Pipelines
-- Infrastructure as Code (Terraform)
-- Multi-Environment Deployment
-
----
-
-## Author
-
-**Sreepathi Gnaneshwar**
-
-Data Engineer | MLOps Engineer | Cloud & AI Enthusiast
-
-GitHub Repository:
+Region:
 
 ```text
-https://github.com/Gnaneshwarsreepathi/gcp-vertex-ml-lab
+us-central1
 ```
 
 ---
 
-## License
+# Screenshots
 
-This project is intended for educational and learning purposes.
+Add screenshots inside a folder named:
+
+```text
+screenshots/
+```
+
+Suggested Structure:
+
+```text
+screenshots/
+
+01-project-overview.png
+02-project-configuration.png
+03-api-enablement.png
+04-storage-bucket.png
+05-train-script.png
+06-run-script-part1.png
+07-run-script-part2.png
+08-training-job.png
+09-model-registry.png
+10-endpoint-deployment.png
+11-storage-artifact.png
+12-prediction-test.png
+```
+
+---
+
+# Cleanup
+
+## Get Endpoint
+
+```bash
+gcloud ai endpoints list --region=$REGION
+```
+
+---
+
+## Get Deployed Model
+
+```bash
+DEPLOYED_MODEL_ID=$(gcloud ai endpoints describe $ENDPOINT_ID \
+--region=$REGION \
+--format='value(deployedModels.id)')
+```
+
+---
+
+## Undeploy Model
+
+```bash
+gcloud ai endpoints undeploy-model $ENDPOINT_ID \
+--region=$REGION \
+--deployed-model-id=$DEPLOYED_MODEL_ID
+```
+
+---
+
+## Delete Endpoint
+
+```bash
+gcloud ai endpoints delete $ENDPOINT_ID \
+--region=$REGION \
+--quiet
+```
+
+---
+
+## Delete Model
+
+```bash
+gcloud ai models delete $MODEL_ID \
+--region=$REGION \
+--quiet
+```
+
+---
+
+## Delete Storage Bucket
+
+```bash
+gsutil -m rm -r gs://$BUCKET
+```
+
+---
+
+# Troubleshooting
+
+## API Not Enabled
+
+Run:
+
+```bash
+gcloud services enable \
+aiplatform.googleapis.com \
+storage.googleapis.com \
+artifactregistry.googleapis.com
+```
+
+---
+
+## Bucket Already Exists
+
+Create new bucket:
+
+```bash
+BUCKET=${PROJECT_ID}-vertex-ml-lab-$RANDOM
+
+export BUCKET
+```
+
+---
+
+## Project Not Set
+
+Check:
+
+```bash
+gcloud config get-value project
+```
+
+Set:
+
+```bash
+gcloud config set project YOUR_PROJECT_ID
+```
+
+---
+
+## Deployment Taking Long Time
+
+Check:
+
+```bash
+gcloud ai endpoints list --region=$REGION
+```
+
+---
+
+## Model Artifact Missing
+
+Check:
+
+```bash
+gsutil ls -r gs://$BUCKET
+```
+
+Expected:
+
+```text
+model.joblib
+```
+
+---
+
+# Future Enhancements
+
+- Vertex AI Pipelines
+- CI/CD Integration
+- Cloud Build Automation
+- Terraform Infrastructure
+- Model Monitoring
+- Feature Store Integration
+- Automated Retraining Pipeline
+
+---
+
+# Author
+
+Gnaneshwar Sreepathi
+
+Project: GCP Vertex AI MLOps Project
+
+Platform: Google Cloud Vertex AI
+
+Year: 2026
