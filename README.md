@@ -10,6 +10,12 @@ The objective of this project is to understand the complete lifecycle of a machi
 
 ---
 
+## Architecture
+
+![GCP Vertex AI MLOps Architecture](03-architecture-diagram.png)
+
+Figure: End-to-End Vertex AI MLOps Workflow
+
 ## Project Architecture
 
 ```text
